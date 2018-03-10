@@ -1,5 +1,5 @@
 //
-//  AddItemViewController.swift
+//  itemDetailViewController.swift
 //  Checklist
 //
 //  Created by Cullen Mooney on 3/9/18.
@@ -8,15 +8,33 @@
 
 import UIKit
 
-class AddItemViewController: UITableViewController, UITextFieldDelegate {
+// Creating a protocol that can only be implemented on classes
+protocol ItemDetailViewControllerDelegate: class {
+    func itemDetailViewControllerDidCancel(_ controller: ItemDetailV)
+    func itemDetailViewController(_ controller: ItemDetailV, didFinishAdding item: ChecklistItem)
+    func itemDetailViewController( _ controller: ItemDetailV, didFinishEditing item: ChecklistItem)
+}
+
+class ItemDetailV: UITableViewController, UITextFieldDelegate {
 
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var cancelBarButton: UIBarButtonItem!
     @IBOutlet weak var doneBarButton: UIBarButtonItem!
+    var itemToEdit: ChecklistItem?
+    
+    // There may be a delegate and theere may not
+    weak var delegate: ItemDetailViewControllerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.largeTitleDisplayMode = .never
+        
+        // If editing an item, update the title and textfield to reflect that
+        if let item = itemToEdit {
+            title = "Edit Item"
+            textField.text = item.text
+            doneBarButton.isEnabled = true
+        }
     }
     
     // Keyboard will instantly come up and cursor will be set
@@ -26,11 +44,19 @@ class AddItemViewController: UITableViewController, UITextFieldDelegate {
     
     @IBAction func cancel() {
         navigationController?.popViewController(animated: true)
+        delegate?.itemDetailViewControllerDidCancel(self)
     }
     
     @IBAction func done() {
-        navigationController?.popViewController(animated: true)
-        print("Content of textfield: \(textField.text!)")
+        if let itemToEdit = itemToEdit {
+            itemToEdit.text = textField.text!
+            delegate?.itemDetailViewController(self, didFinishEditing: itemToEdit)
+        } else {
+            let item = ChecklistItem()
+            item.text = textField.text!
+            item.checked = false
+            delegate?.itemDetailViewController(self, didFinishAdding: item)
+        }
     }
     
     // So the user can't select the row
