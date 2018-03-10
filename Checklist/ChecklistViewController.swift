@@ -11,6 +11,21 @@ import UIKit
 class ChecklistViewController: UITableViewController {
     
     var items: [ChecklistItem]
+    @IBAction func addItem(_ sender: Any) {
+        let newRowIndex = items.count
+        let item = ChecklistItem()
+        var titles = ["Workout", "Homework", "Watch Tv", "Game", "Work on app", "Fix chair"]
+        let randomNumber = arc4random_uniform(UInt32(titles.count))
+        let title = titles[Int(randomNumber)]
+        item.text = title
+        item.checked = true
+        items.append(item)
+        
+        // Adding a new row to the table view
+        let indexPath = IndexPath(row: newRowIndex, section: 0)
+        let indexPaths = [indexPath]
+        tableView.insertRows(at: indexPaths, with: .automatic)
+    }
     
     required init?(coder aDecoder: NSCoder) {
         
@@ -62,6 +77,7 @@ class ChecklistViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        navigationController?.navigationBar.prefersLargeTitles = true
     }
 
     override func didReceiveMemoryWarning() {
@@ -69,18 +85,29 @@ class ChecklistViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    // This is the swipe to delete method
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        
+        // Removing the item from the model
+        items.remove(at: indexPath.row)
+        
+        // Updating the table view to reflect the deletion
+        tableView.reloadData()
+        
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // method is called to return the number of cells in the table view section
+        // Method is called to return the number of cells in the table view section
         return items.count
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // if theres a check mark we dont want it on tap and vice versa
-        // first need to get cell
+        // If theres a check mark we dont want it on tap and vice versa
+        // First need to get cell
         if let cell = tableView.cellForRow(at: indexPath) {
             let item = items[indexPath.row]
             
-            // class method to set opposite value for checked
+            // Class method to set opposite value for checked
             item.toggleChecked()
             
             configureCheckmark(for: cell, with: item)
@@ -89,7 +116,7 @@ class ChecklistViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // we use this method to customize our cell
+        // We use this method to customize our cell
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChecklistItem", for: indexPath)
         let item = items[indexPath.row]
         
@@ -113,4 +140,3 @@ class ChecklistViewController: UITableViewController {
     }
 
 }
-
